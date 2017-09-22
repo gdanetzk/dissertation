@@ -1,0 +1,74 @@
+---
+title: "R Code for Dissertation Chapter 5"
+author: "Kristi Gdanetz MacCready"
+output: html_document
+---
+*** 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Set-up
+
+```{r, eval=FALSE}
+
+### Load packages and data --------------------------------
+library(readxl)
+library(ggplot2)
+library(plyr)
+
+conidia_counts <- read_excel("~/Documents/conidia_counts.xlsx")
+
+View(conidia_counts)
+```
+
+## Generate summary statistics 
+This creates an new table that will be used to for the graph
+```{r, eval=FALSE}
+
+cdata <- ddply(conidia_counts, c("Strain", "Timepoint"), summarise,
+               N    = sum(!is.na(Cells_mL)),
+               Avg = mean(Cells_mL, na.rm=TRUE),
+               StDev   = sd(Cells_mL, na.rm=FALSE),
+               StErr   = (StDev/(sqrt(N)))) 
+View(cdata)
+```
+
+## Generate the plot
+```{r, eval=FALSE}
+
+ggplot(data = cdata, #plot data points
+       aes(x = Timepoint, y = Avg,
+           group = Strain, color = Strain)) + 
+  geom_line(size=1) + geom_point(size = 3) +  #add line
+  geom_errorbar(aes(ymin=Avg-StErr, ymax=Avg+StErr), #add error bars
+                width=0.2) +
+  scale_x_discrete("Time (hours)", #manually set axes
+                   labels = c("0", "24", "48", "72", "96", "120")) + 
+  scale_y_continuous(seq(0, 30000000, 7500000), 
+                     name = "Concentration (conidia/ml)") +
+  theme(panel.grid.minor.y=element_blank(), #clean up background
+        panel.grid.major.y=element_blank(),
+        panel.grid.minor.x=element_blank(),
+        panel.grid.major.x=element_blank()) +
+  scale_color_manual(values = c("#faa51a", "#9bca3c", "#70c6a5", #set colors
+                                "#426fb6", "#8750a0", "#ed187a")) +
+  scale_fill_manual(breaks=c("PH1","2B","3B"), #set legend order
+                    labels=c("PH1","2B","3B"))
+
+```
+
+Plot generated should look like this:  
+
+![](/Users/Home/Documents/Google_Drive/Research/Terpene_Synthase/conidia_plot.tiff)
+
+*** 
+
+## Test for significance 
+Use ANOVA and post-hoc test to determine if concentrations are significantly different between time points. 
+
+```{r, eval=FALSE}
+
+```
+
